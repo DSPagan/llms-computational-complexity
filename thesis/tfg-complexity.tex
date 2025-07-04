@@ -1,0 +1,697 @@
+\documentclass[12pt,twoside]{article}
+
+% La extensión total de la memoria deberá ser de un máximo de 50 páginas (excluidos resumen, índice y posibles anexos).
+
+% Según las recomendaciones de estilo, el formato de la memoria se ajustará a lo siguiente:
+% - Formato del papel: DIN A4.
+% - Impresión a dos caras.
+% - Márgenes: superior e inferior, 2.5 cm. Márgenes laterales: páginas impares, izquierdo 4 cm y derecho 2 cm; páginas pares, izquierdo 2 cm y derecho 4 cm.
+% - Tipo de letra: Times New Roman de 12 puntos.
+% - Interlineado: 1.5 líneas.
+% - Alineación: justificación completa.
+% - Sangrado de párrafo: 0.5 cm la primera línea de cada párrafo. No se pondrá espacio entre párrafos.
+% - Las páginas deberán ir numeradas en números arábigos.
+
+% Teniendo en cuenta las indicaciones previas, definimos el estilo en LaTeX:
+
+% Indicaciones para el idioma:
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
+
+\usepackage{todonotes}
+
+% Adaptación de itemize y enumerate a los usos tipograficos españoles:
+\let\layoutspanish\relax
+\addto\captionsspanish{\def\tablename{Tabla}} % para que escriba "Tabla" en lugar de "Cuadro"
+\unaccentedoperators  % para que no acentúe los operadores
+
+% Área de impresión de una página:
+\usepackage[a4paper]{geometry}
+  \geometry{hmargin={2.5cm,2.5cm},height=22cm}
+
+% Formato de algunas distancias:
+\renewcommand{\baselinestretch}{1.2}    % separación entre líneas de un mismo párrafo
+\setlength{\partopsep}{0pt}
+\setlength{\itemsep}{0pt}
+\setlength{\topsep}{0pt}
+\setlength{\parsep}{0pt}
+\setlength{\parskip}{0.25\baselineskip}   % separación entre párrafos
+
+\renewcommand{\textfraction}{0.1}   % mínima fracción de la página para el texto
+\renewcommand{\topfraction}{1}      % máxima fracción de la página para objetos flotantes en la parte superior
+\renewcommand{\bottomfraction}{1}
+\renewcommand{\floatpagefraction}{1}
+
+\setcounter{totalnumber}{5}
+\setcounter{topnumber}{3}
+\setcounter{bottomnumber}{2}
+
+% Adaptación de las "caption" de los entorns "figure" y "table":
+\usepackage{caption}
+\captionsetup{
+  labelfont={up,bf},%
+  font={small,sl},%
+}
+
+% Indentación del primer párrafo de una sección:
+\usepackage{indentfirst}
+
+
+% Paquetes recomendados para la inclusión de fórmulas matemáticas:
+\usepackage{amsmath}
+\allowdisplaybreaks  % para que pueda partir fórmulas que ocupan más de una línea, necesita el paquete anterior
+\usepackage{amssymb} % para cargar algunos símbolos como \blacksquare y \square
+\usepackage{amsfonts} % para cargar algunas fuentes en estilo matemático
+\usepackage{enumerate}
+% Teoremas (se pueden definir todos los que se necesiten):
+
+\newtheorem{theorem}{Teorema}[section]
+\newtheorem{proposition}[theorem]{Proposición}
+\newtheorem{definition}[theorem]{Definición}
+\newtheorem{lemma}[theorem]{Lema}
+\newtheorem{corollary}[theorem]{Corolario}
+\newtheorem{example}[theorem]{Ejemplo}
+\newtheorem{app}[theorem]{Aplicación}
+\newtheorem{remark}[theorem]{Observación}
+\newtheorem{agrad}[theorem]{Agradecimiento}
+\newtheorem{algo}[theorem]{Algoritmo}
+\newtheorem{axiom}[theorem]{Axioma}
+\newtheorem{case}[theorem]{Caso}
+\newtheorem{conclu}[theorem]{Conclusión}
+\newtheorem{conjectura}[theorem]{Conjetura}
+\newtheorem{notac}[theorem]{Notación}
+\newtheorem{soluc}[theorem]{Solución}
+\newtheorem{summary}[theorem]{Sumario}
+
+
+\newtheorem{proof}[theorem]{Demostración.}
+\renewenvironment{proof}{\emph{Demostración.}} {\quad \hfill $\blacksquare$ \newline} % para que aparezca un cuadrado negro al acabar la demostración
+
+
+% Definición de cabeceras y pies de página:
+
+\usepackage{fancyhdr}                     % para definir distintos tipos de cabeceras y pies de página
+
+\newcommand{\RunningAuthor}{Daniel Sánchez Pagán}
+\newcommand{\Author}[1]{\renewcommand{\RunningAuthor}{#1}}
+\renewcommand{\leftmark}{\RunningAuthor}
+
+\newcommand{\RunningTitle}{Estimación de complejidad computacional con grandes modelos de lengua}
+\newcommand{\Title}[1]{\renewcommand{\RunningTitle}{#1}}
+\renewcommand{\rightmark}{\RunningTitle}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[LO]{\small \slshape \leftmark}    % lo que aparece en la parte izquierda de la páginas impares
+\fancyhead[RE]{\small \slshape \rightmark}   % lo que aparece en la parte derecha de las páginas pares
+\fancyhead[RO,LE]{\small \slshape \thepage}  % el número de página aparece en la parte exterior de la cabecera
+
+\renewcommand{\headrulewidth}{0.6pt}         % grueso de la línea horizontal por debajo de la cabecera de la página
+\renewcommand{\footrulewidth}{0pt}           % grueso de la línea horizontal por encima del pie de página
+                                             % en este caso está vacío
+\setlength{\headheight}{1.5\headheight}      % aumenta la altura de la cabecera en una parte y media
+
+\fancypagestyle{plain}{%                     % redefinición del estilo de página 'plain'
+  \fancyhf{}                                 % limpia todas las cabeceras y pies de página
+  \setlength{\headwidth}{\textwidth}
+  \fancyfoot[C]{\small \slshape \thepage}    % excepto el centro del pie de página
+  \renewcommand{\headrulewidth}{0pt}
+  \renewcommand{\footrulewidth}{0pt}
+  }
+
+% Instrucciones que se usan frecuentemente
+\newcommand{\abs}[1]{\ensuremath{|#1|}}
+
+% Algunos paquetes usados
+\usepackage[linesnumbered,ruled,vlined,spanish,onelanguage]{algorithm2e}
+\usepackage{tcolorbox}
+\usepackage{float}
+\usepackage[colorlinks=true, linkcolor=blue, citecolor=blue, urlcolor=blue, breaklinks=true]{hyperref}
+\tcbuselibrary{breakable, skins}
+
+
+% Datos del trabajo y autor:
+\title{Título}
+\author{Nombre Apellido1 Apellido2\\*[1em]
+\begin{minipage}{0.75\textwidth}
+\footnotesize \itshape
+\begin{center}
+Universidad de Alicante \\
+4º de Grado en Matemáticas
+\end{center}
+\end{minipage}
+}
+\date{Julio 2021}
+
+% Para incluir paginas de otro pdf (por ejemplo, la de la portada):
+\usepackage{pdfpages}
+
+
+\begin{document}
+
+% Para introducir la portada en castellano, se guardar anexo-1-portada-memoria-tfg-matematicas.pdf en el mismo directorio:
+\includepdf[pages=1]{anexo-1-portada-memoria-tfg-matematicas.pdf}
+
+
+% Después de la portada, se introducirá un resumen del Trabajo Fin de Grado (máximo 500 palabras) en una de las lenguas oficiales y en inglés, junto con las palabras clave (de 3 a 5).
+
+\section*{Resumen}
+
+
+\newpage
+
+\section*{Abstract}
+
+
+% A continuación, se incluirá el índice del trabajo y, seguidamente, se desarrollará la memoria.
+\newpage
+
+\tableofcontents
+
+\newpage
+
+\section{Introducción}\label{sec:1}
+
+Para estimar automáticamente la complejidad computacional \cite{antecedentes} de un algoritmo, normalmente es necesario ejecutarlo con diferentes tallas de entrada. Otra opción es realizar un análisis manual de la misma mediante cuenta de pasos de programa.
+
+En este trabajo, se pretende investigar el uso de aprendizaje profundo para estimar automáticamente la complejidad computacional de un algoritmo sin que sea necesario ejecutarlo, lo que puede servir de apoyo a los programadores de cara a escribir código más eficiente. Se explorará la capacidad de los grandes modelos de lengua \cite{libro} para llevar a cabo esta tarea.
+
+\section{Antecedentes}
+\begin{definition}[Algoritmo]
+    Un algoritmo es un conjunto de reglas que permite la resolución de algún tipo de problema.
+\end{definition}
+
+Los algoritmos son fundamentales para dar la estructura de una solución sistemática a un determinado problema, para que esta pueda ser replicada y comprendida por otros.
+
+Existen muchos algoritmos capaces de resolver el mismo problema, por lo que para escoger uno específico necesitaremos basarnos en un criterio adecuado.
+
+\begin{definition}[Complejidad computacional]
+    La complejidad computacional de un algoritmo es el tiempo empleado por este para ejecutarse y dar un resultado a partir de los datos de entrada.
+\end{definition}
+
+El tiempo es un recurso fundamental, por lo que priorizaremos usar un algoritmo que tenga menor complejidad computacional.
+
+Esta definición de complejidad computacional tiene algún problema. Por ejemplo, la complejidad de un algoritmo no es algo constante, sino que, dependiendo de los datos de entrada, esta complejidad podrá variar. Por tanto, no siempre podremos dar un mejor algoritmo para todos los casos posibles de un mismo problema.
+
+En particular, hay algoritmos que varían su complejidad según el tamaño de sus datos de entrada.
+
+\begin{definition}[Talla]
+    La talla de un problema corresponde al valor o conjunto de valores asociados a la entrada del problema que representa, normalmente, una medida de su tamaño respecto a otras entradas posibles.
+\end{definition}
+
+\begin{algorithm}[H]
+\DontPrintSemicolon
+\SetAlgoLined
+\caption{Sumar elementos de un vector}
+\KwIn{Un vector $V$ de tamaño $n$}
+\KwOut{Suma de elementos de $V$}
+\BlankLine
+$suma \gets V[1]$\; 
+\For{$i \gets 2$ \KwTo $n$}{
+    $suma \gets suma + V[i]$
+}
+\Return $suma$\;
+\end{algorithm}
+
+\hspace{5mm}
+
+Mediremos la complejidad de un algoritmo con una función $T(n)$, que dada una talla $n\in\mathbb{N}$ devolverá el número de pasos que realiza el algoritmo. Para el Algoritmo 1, la talla del problema es el tamaño $n$ del vector $V$ y su complejidad es $T(n)=5n$.
+
+Aun trabajando con una misma talla, podemos tener un algoritmo que tenga distintas complejidades computacionales según cómo estén configurados sus datos de entrada.
+
+\begin{definition}[Instancia]
+    Una instancia de un problema corresponde a todas las configuraciones diferentes de la entrada, de una talla determinada, que dan lugar al mismo comportamiento del algoritmo.
+\end{definition}
+
+
+\begin{algorithm}
+\DontPrintSemicolon
+\SetAlgoLined
+\caption{Contiene cero}
+\KwIn{Un vector $V$ de tamaño $n$}
+\KwOut{\texttt{true} si $0 \in V$, \texttt{false} en caso contrario}
+\For{$i \gets 1$ \KwTo $n$}{
+    \If{$V[i] = 0$}{
+        \Return \texttt{true}
+    }
+}
+\Return \texttt{false}
+\end{algorithm}
+
+
+De esta manera, se hace imposible dar un único valor a la complejidad computacional, por lo que comúnmente se habla de los casos peor, mejor y promedio.
+
+Con el Algoritmo 2 podemos ver que el caso mejor sería encontrar un cero en el primer elemento del vector, lo que conlleva una complejidad de $T(n)=5$; mientras que en el peor caso no lo encontraría, con una complejidad de $T(n)=4n+3$.
+
+A partir de ahora nos vamos a referir siempre al caso peor para el análisis de la complejidad.
+
+\begin{definition}[Notación O-grande]
+Sea $f:\mathbb{N}\rightarrow\mathbb{R}^{+}$. El conjunto de las funciones del orden de $f(n)$, llamado $\mathcal{O}(f(n))$ se define como $$\mathcal{O}(f(n))=\{g:\mathbb{N}\rightarrow\mathbb{R}^{+}\mid\exists \;c\in\mathbb{R}^{+},n_{0}\in\mathbb{N}\; \text{tales que}\; g(n)\leq c\cdot f(n)\;\;\forall n\geq n_{0}\}$$
+\end{definition}
+
+La notación O-grande, también escrita como $\mathcal{O}(f(n))$, proporciona una cota asintótica superior del crecimiento de una función. La utilizaremos para expresar cómo escala el número de pasos de un algoritmo conforme aumenta la talla del problema, ignorando factores constantes o de menor orden.
+
+Por ejemplo, en el Algoritmo 1, aunque la complejidad exacta sea $T(n) = 5n$, al usar notación O-grande escribimos simplemente que $T(n) \in O(n)$, ya que existe una constante $c=5$ tal que $T(n) \leq c \cdot n$ para todo $n \geq 1$.
+
+Algunos órdenes de complejidad comunes, y que vamos a usar más adelante, son:
+\begin{itemize}
+    \item $\mathcal{O}(1)$: constante
+    \item $\mathcal{O}(\log n)$: logarítmico
+    \item $\mathcal{O}(n)$: lineal
+    \item $\mathcal{O}(n\log n)$: cuasi lineal
+    \item $\mathcal{O}(n^2)$: cuadrático
+    \item $\mathcal{O}(n^3)$: cúbico
+    \item $\mathcal{O}(a^n)$ con $a\in\mathbb{R}^{++}$: exponencial
+\end{itemize}
+
+\section{Grandes modelos de lengua}
+Los \textbf{grandes modelos de lengua} (\textit{Large Language Models}, LLM) \cite{libro} se han consolidado como una de las tecnologías más influyentes dentro del campo de la inteligencia artificial. Estos modelos están basados en técnicas de \textbf{aprendizaje automático} (\textit{Machine Learning}, ML), concretamente en redes neuronales profundas, y se entrenan sobre enormes volúmenes de datos textuales con el objetivo de modelar el lenguaje humano.
+
+Lo primero que vamos a necesitar es generar un vocabulario $V$ con todas las posibles palabras o símbolos; a cada elemento de este vocabulario lo llamamos \textbf{token}.
+
+\subsection{Transformers}
+Una de las claves del éxito de los LLM ha sido la adopción de la arquitectura \textbf{Transformer} \cite{transformer}, introducida por Vaswani et al. en 2017. Esta arquitectura permite modelar dependencias a largo plazo en secuencias de texto de manera eficiente mediante mecanismos de atención, superando las limitaciones de modelos anteriores como las redes recurrentes (RNN) o las redes LSTM \cite{LSTM}. Gracias a esta innovación, los Transformers han permitido construir modelos con miles de millones de parámetros, capaces de generar texto coherente, traducir idiomas, resumir información o incluso razonar de forma básica.
+
+Para trabajar con los tokens de entrada necesitamos una representación vectorial de estos, la cual obtendremos a partir de las matrices de incrustación $\mathbf{E}\in\mathbb{R}^{\abs{V}\times d}$, que tiene como fila $i$ la representación vectorial del token $i$ del vocabulario $V$; y $\mathbf{E_{pos}}\in\mathbb{R}^{N\times d}$ que codifica la posición en el contexto de cada token. Esta última matriz $\mathbf{E_{pos}}$ puede generarse con funciones fijas o ser aprendida durante el entrenamiento. A $d$ se le conoce como dimensionalidad del modelo. A partir de los $N$ tokens de entrada, conocidos como contexto, construimos una matriz $\mathbf{X}$ de tamaño $N\times d$ como $\mathbf{X=E[i_1,i_2,\dots,i_N]+E_{pos}}$ siendo $\mathbf{E[i_1,i_2,\dots,i_N]}$ la matriz resultante de tomar las filas $i_1,i_2,\dots,i_N$ de $\mathbf{E}$ que corresponden con las representaciones vectoriales de los tokens de entrada.
+
+La atención es un mecanismo que permite a un modelo enfocar su \"{}atención\"{} en partes relevantes de la entrada al procesar un elemento, en lugar de tratar todos los elementos por igual. Esta atención la mediremos mediante una \textbf{cabeza de atención} (\textit{attention head}). Para ello, asignamos tres distintos roles a los tokens de entrada:
+\begin{itemize}
+    \item \textbf{Consulta} (\textit{Query}, $\mathbf{Q}$): El elemento actual que está siendo comparado con los anteriores.
+    \item \textbf{Clave} (\textit{Key}, $\mathbf{K}$): Los anteriores elementos que están siendo comparados con el actual para hallar el peso de similitud.
+    \item \textbf{Valor} (\textit{Value}, $\mathbf{V}$): Suma ponderada de los pesos de similitud para el elemento actual.
+\end{itemize}
+Estos tres roles los representamos con las matrices de pesos $\mathbf{W^{Q}}, \mathbf{W^{K}}$ de tamaño $d\times d_k$ y $\mathbf{W^{V}}$ de tamaño $d\times d_v$. Estas matrices de pesos dan una proyección de los vectores a los roles consulta, clave y valor:
+
+\begin{equation}
+    \mathbf{Q}=\mathbf{XW^Q},\quad \mathbf{K}=\mathbf{XW^K}, \quad \mathbf{V}=\mathbf{XW^V}
+\end{equation}
+
+de tamaños $N\times d_k$ para $\mathbf{Q}$ y $\mathbf{K}$ y $N\times d_v$ para $\mathbf{V}$. Para la comparación consulta-clave calcularemos la matriz $\mathbf{QK}^\top$ de tamaño $N\times N$, la cual multiplicaremos por $\frac{1}{\sqrt{d_k}}$ para evitar que los coeficientes de la matriz escalen indefinidamente. De esta manera, calculamos:
+
+\begin{align}
+\textbf{head} &= \text{softmax} \left( \text{mask} \left( \frac{\mathbf{QK}^\top}{\sqrt{d_k}} \right) \right) \mathbf{V} \\
+\mathbf{A} &= \textbf{head} \, \mathbf{W^O}
+\end{align}
+
+En el cálculo de $\mathbf{head}$ podemos encontrar una función \textit{mask}, esta es necesaria pues al calcular la matriz $\mathbf{QK}^\top$ estamos comparando keys posteriores al query, lo cual carece de sentido porque no debería poder acceder a tokens futuros. Para evitarlo, introducimos dicha función \textit{mask} que asigna a estas posiciones $-\infty$, de manera que la función \textit{softmax} las transforme en $0$. En la práctica, la función \textit{mask} consiste en sumar una matriz $M\in\mathbb{R}^{N\times N}$ triangular superior donde $M_{ij}=-\infty\;\forall j>i$ y el resto son $0$. Además, en el cálculo de $\mathbf{A}$ aparece la matriz $\mathbf{W^O}\in\mathbb{R}^{d_v\times d}$ que usamos para redimensionar $\mathbf{head}$ a un tamaño de $N\times d$.
+
+En la realidad, los Transformers usan múltiples cabezas de atención, cada una de las cuales puede especializarse en distintas tareas mediante la configuración de sus propios parámetros. A esto se le conoce como \textbf{atención multi-cabeza} (\textit{multi-head attention}) y sigue un proceso muy similar al cálculo de cada cabeza de atención, pues cada una de estas cabezas se calcula paralelamente al resto. Tomemos un número $A$ de cabezas, para calcular cada $\mathbf{head_i}$ seguiremos el mismo proceso que antes pero para calcular la matriz $\mathbf{A}$ se concatenarán las $A$ cabezas, que indicaremos con el símbolo $\oplus$; y, de igual manera que antes, tomaremos la matriz $\mathbf{W^O}\in\mathbb{R}^{Ad_v\times d}$ para ajustar el tamaño de la matriz de salida:
+
+\begin{align}
+\mathbf{Q_i}=\mathbf{XW^K_i}, \quad \mathbf{K_i} &= \mathbf{XW^K_i}, \quad \mathbf{V_i}=\mathbf{XW^V_i} \\
+\mathbf{head_i} = \text{SelfAttention}\left( \mathbf{Q_i,K_i,V_i} \right) &= \text{softmax} \left( \text{mask} \left( \frac{\mathbf{Q_i K_i}^\top}{\sqrt{d_k}} \right) \right) \mathbf{V_i} \\
+\mathbf{A} = \text{MultiHeadAttention}\left( \mathbf{X} \right) &= \left(\mathbf{head_1}\oplus\mathbf{head_2}\oplus\dots\oplus\mathbf{head_A} \right) \, \mathbf{W^O}
+\end{align}
+
+El cálculo de $\mathbf{A}$ consiste en una de las capas que forman el bloque Transformer; antes y después de esta \textbf{capa de atención} (\textit{attention layer}), realizamos una \textbf{normalización por capas} (\textit{layer normalization}) \cite{LayerNorm}. Para ello, dado un vector $\mathbf{x}$ de dimensión $d$, se definen la media $\mu$, desviación típica $\sigma$ y vector normalizado $\hat{\mathbf{x}}$ como
+
+\begin{align}
+    \mu &= \frac{1}{d}\sum_{i=1}^d x_i \\
+    \sigma &= \sqrt{\frac{1}{d}\sum_{i=1}^{d}(x_i-\mu)^{2}} \\
+    \hat{\mathbf{x}} &= \frac{x-\mu}{\sigma}
+\end{align}
+
+de forma que se resta $\mu$ y se divide por $\sigma$ a cada componente del vector $\mathbf{x}$. Finalmente, en la implementación de la normalización por capas, se introducen dos parámetros aprendibles durante el entrenamiento, $\gamma$ y $\beta$, que representan los valores de escala y desplazamiento, respectivamente.
+
+\begin{equation}
+    \text{LayerNorm}(\mathbf{x})=\gamma\frac{\mathbf{x}-\mu}{\sigma}+\beta
+\end{equation}
+
+En nuestro caso, aplicaremos LayerNorm a $\mathbf{X}$, recordamos que tiene tamaño $N\times d$, por lo que actuará independientemente sobre cada fila de $\mathbf{X}$.
+
+A otra de las capas se le conoce como \textbf{capa de propagación directa} (\textit{feedforward layer}, FFL). Esta capa consiste fundamentalmente en una red neuronal completamente conectada (\textit{fully connected}) con una capa oculta de dimensionalidad $d_{ff}$ y dos matrices de peso $\mathbf{W_1}\in\mathbb{R}^{d\times d_{ff}}$ y $\mathbf{W_2}\in\mathbb{R}^{d_{ff}\times d}$. Aplicaremos la función
+
+\begin{equation}
+    \text{FFN}(\mathbf{x})=\text{ReLU}(\mathbf{xW_1}+b_1)\mathbf{W_2}+b_2
+\end{equation}
+
+donde ReLU es la función de activación ReLU$(x)=\max(0,x)$ que se aplica a cada componente del vector $\mathbf{x}$ y $b_1$ y $b_2$ son vectores de sesgo de dimensiones $d_{ff}$ y $d$, respectivamente. De nuevo, esta función se aplica a $\mathbf{X}$, por lo que la función FFN se aplicará fila a fila.
+
+Tras aplicar cada capa, se suma la entrada que se le proporcionó a la capa con la salida de dicha capa. De esta manera, podemos compactar todos estos procesos en dos expresiones:
+
+\begin{align}
+    \mathbf{O} &= \mathbf{X}+\text{MultiHeadAttention}(\text{LayerNorm}(\mathbf{X})) \\
+    \mathbf{H} &= \mathbf{O}+\text{FFN}(\text{LayerNorm}(\mathbf{O}))
+\end{align}
+
+También podemos descomponer los cálculos en cinco componentes que llamaremos $\mathbf{T_i}$, de tamaño $N\times d$, de manera que se pueda ver de forma secuencial:
+
+\begin{align}
+    \mathbf{T_1} &= \text{LayerNorm}(\mathbf{X})\\
+    \mathbf{T_2} &= \text{MultiHeadAttention}(\mathbf{T_1})\\
+    \mathbf{T_3} &= \mathbf{T_2}+\mathbf{X}\\
+    \mathbf{T_4} &= \text{LayerNorm}(\mathbf{T_3})\\
+    \mathbf{T_5} &= \text{FFN}(\mathbf{T_4})\\
+    \mathbf{H} &= \mathbf{T_5}+\mathbf{T_3}
+\end{align}
+
+En un modelo Transformer, varios bloques se apilan en profundidad. La salida de un bloque se convierte en la entrada del siguiente, de manera que el bloque $k$ tiene como entrada $\mathbf{H^{k-1}}$.
+
+Por último, el elemento necesario para poder procesar el lenguaje natural es la \textbf{cabeza de modelado del lenguaje} (\textit{language modeling head}). En esencia, los LLM son predictores de palabras. Por tanto, dado un contexto, podemos calcular la probabilidad de cada palabra del vocabulario de ser la siguiente palabra. Por ejemplo:
+
+$$P(\text{Madrid}|\text{La capital de España es})$$
+
+calcula la probabilidad de que el modelo afirme que Madrid es la capital de España. De esta manera podemos dar una distribución de probabilidad para todos los tokens del vocabulario $V$.
+
+$$P(w|\text{La capital de España es})$$
+
+De calcular estas probabilidades se encarga la cabeza de modelado del lenguaje, las cuales calcula a partir de la última fila de la salida del último bloque, es decir, de $\mathbf{H_N^{L}}$. Necesitaremos una matriz de desincrustación $\mathbf{U}$, que podemos aprender durante el entrenamiento o tomar como $\mathbf{U}=\mathbf{E}^\top$. De esta manera calculamos:
+
+\begin{align}
+    \mathbf{u} &= \mathbf{H_N^{L}\;E}^\top \\
+    \mathbf{y} &= \text{softmax}(\mathbf{u})
+\end{align}
+
+La función softmax es la que convierte los valores de $\mathbf{u}$ en probabilidades en $\mathbf{y}$. Así, podemos empezar a generar texto.
+
+\subsection{Generación de texto}
+Una vez tenemos las probabilidades de cada token, debemos escoger un criterio para elegir el token que sucederá al contexto. Hay varias estrategias que se pueden seguir, pero la más sencilla es el \textit{\textbf{greedy decoding}}. Esta técnica consiste en elegir siempre el token con mayor probabilidad.
+
+\begin{equation}
+    \hat{w}_i=\text{argmax}_{w\in V}P(w|w_{<i})
+\end{equation}
+
+Si bien esta sugiere ser la solución localmente óptima, puede generar textos más genéricos y predecibles, además de ser una generación determinista y repetitiva. Esto lo podemos evitar con otra técnica conocida como \textbf{muestreo top-}$\boldsymbol{p}$ (\textit{top-p sampling}), la cual consiste en truncar la distribución de probabilidad para quedarnos solamente con el percentil $p$ de tokens más probables. Es decir, ordenamos todos los tokens de mayor a menor probabilidad según la distribución $P(w|w_{<i})$ y así obtenemos el vocabulario top-$p$ $V^{(p)}$, que es el menor conjunto de estas palabras tal que
+
+\begin{equation}
+    \sum_{w\in V^{(p)}}P(w|w_{<i})\geq p
+\end{equation}
+
+Una vez calculado $V^{(p)}$ elegiremos aleatoriamente el token según la distribución de probabilidad resultante. Así aportaremos variabilidad a la generación de texto y obtendremos resultados más orgánicos. Existen otros métodos de muestreo más sofisticados, orientados a tareas específicas; sin embargo, no existe un método de muestreo perfecto y la elección dependerá de la tarea a realizar.
+
+\subsection{Entrenamiento}
+El entrenamiento de los modelos LLM consiste en ajustar parámetros como las matrices de pesos que hemos estado definiendo anteriormente. Para esto necesitamos un corpus masivo de texto, que puede incluir libros, artículos, conversaciones en línea, páginas web, entre otros. Para hacerlo primero necesitamos una función de pérdida, vamos a usar la función de \textbf{pérdida de entropía cruzada} (\textit{cross-entropy loss}):
+
+\begin{equation}
+    L_{CE}=-\sum_{w\in V}\mathbf{y}_t[w]\log \hat{\mathbf{y}_t}[w]
+\end{equation}
+
+donde $\mathbf{y}_t[w]$ representa un vector de ceros (con dimensión $\abs{V}$) exceptuando un $1$ en la posición de la siguiente palabra correcta, mientras que $\hat{\mathbf{y}}_t[w]$ representa el vector de probabilidades de ser la siguiente palabra para cada token del vocabulario $V$.
+De esta manera, se puede simplificar como
+
+\begin{equation}
+    L_{CE}(\hat{\mathbf{y}}_t,\mathbf{y}_t)=-\log\hat{\mathbf{y}}_t[w_{t+1}]
+\end{equation}
+
+El objetivo es minimizar esta función de pérdida, por lo que usaremos el método del descenso del gradiente. El problema de esto es calcular el gradiente de la función de pérdida, pues al tener una estructura con tantas capas dificulta el cálculo del gradiente
+
+\begin{equation}
+    \frac{\partial L_{CE}(\hat{\mathbf{y}}_t,\mathbf{y}_t)}{\partial \theta}
+\end{equation}
+
+en función de los parámetros $\theta$ del modelo. Para calcular el gradiente se usan técnicas de \textbf{retropropagación} \cite{retropropagación}, que mediante el uso de la regla de la cadena se propaga hasta el inicio del Transformer. Otros algoritmos más eficientes que el descenso del gradiente para actualizar los parámetros de modelos basados en Transformers son Adam \cite{Adam} y AdamW \cite{AdamW}. A este entrenamiento se le conoce como \textbf{aprendizaje autosupervisado} (\textit{self-supervised learning}, SSL).
+
+Comúnmente, los conjuntos de texto usados para entrenar los modelos son recogidos mediante \textit{web scraping}, es decir, se usan \textit{bots} automatizados para acceder a páginas web y recopilar la información que encuentren en ellas; o proporcionados por terceros, como es el caso de Common Crawl (\url{https://commoncrawl.org/}), un repositorio gratuito que recoge información de miles de millones de páginas web desde 2008.
+
+\subsection{Evaluación}
+Existen numerosas formas de evaluar un modelo LLM, algunas basadas en sus fundamentos y otras basadas en sus aplicaciones. Una de estas métricas es la \textbf{perplejidad} (\textit{perplexity}), que mide la capacidad del modelo para predecir una secuencia de texto. Cuanto menor sea su valor, mayor es el rendimiento del modelo.
+
+\begin{equation}
+    \text{Perplexity}_\theta(w_{1:n})=P_\theta(w_{1:n})^{-\frac{1}{n}}=\sqrt[n]{\prod_{i=1}^n\frac{1}{P_\theta(w_{i}|w_{<i})}}
+\end{equation}
+
+Para tareas específicas como la traducción automática se utiliza BLEU (Bilingual Evaluation Understudy) \cite{BLEU}, para resumen de textos se usa ROUGE (Recall-Oriented Understudy for Gisting Evaluation) \cite{ROUGE} y para tareas de clasificación o pregunta-respuesta se suelen utilizar la accuracy y F1 \cite{F1}.
+
+\subsection{Ajuste fino}
+El \textbf{ajuste fino} (\textit{fine-tuning}) es un proceso de entrenamiento adicional que consiste en adaptar un modelo de lenguaje previamente preentrenado a una tarea o dominio específico mediante la actualización de sus parámetros, optimizando el rendimiento sin necesidad de entrenar un modelo desde cero \cite{fine-tuning}.
+
+\subsection{}
+El \textbf{aprendizaje en contexto} \cite{in-context learning} es una capacidad emergente de grandes modelos de lengua mediante la cual el modelo aprende a realizar tareas nuevas sin necesidad de actualizar sus parámetros, simplemente a partir de ejemplos proporcionados en la propia entrada (\textit{prompt}). Es decir, el modelo generaliza el patrón de una tarea dada observando solo unos pocos ejemplos en el contexto del \textit{prompt}, sin entrenamiento adicional. A la estrategia de incluir ejemplos en el \textit{prompt} se le conoce como \textit{few-shot}.
+
+A diferencia del ajuste fino, donde se modifican explícitamente los pesos del modelo, en el aprendizaje en contexto la \"{}adaptación\"{} se realiza implícitamente a través del mecanismo de atención del Transformer, utilizando los ejemplos previos en la entrada para ajustar su comportamiento temporalmente.
+
+\section{Experimentos}
+El objetivo de los experimentos es evaluar el rendimiento de los grandes modelos de lengua a la hora de clasificar la complejidad computacional de un algoritmo. Para ello, vamos a trabajar con el modelo open-source Llama 3.1 8B Instruct, el cual cuenta con 8 mil millones de parámetros y está preentrenado para seguir instrucciones. La generación de texto será por medio de \textit{greedy decoding} para asegurar la reproducibilidad de los experimentos.
+
+Para evaluar el modelo usaremos el conjunto de datos de CodeComplex, formado por 4769 fragmentos de código de Python. Estos fragmentos de código tienen complejidades computacionales entre: constante, logarítmica, lineal, cuasi lineal, cuadrática, cúbica y exponencial. Las métricas de evaluación serán la accuracy y F1.
+
+El código usado para llevar a cabo los experimentos se encuentra en el repositorio de \texttt{GitHub}: \url{https://github.com/DSPagan/llms-computational-complexity}
+
+Estudiaremos cómo afecta el prompt a las predicciones del modelo en las siguientes fases:
+
+\begin{itemize}
+    \item \textbf{Zero-shot:} El modelo recibe el código a analizar y distintas instrucciones para mejorar su desempeño.
+    \item \textbf{Few-shot:} Además del código y las instrucciones, el modelo recibe un ejemplo de cada una de las clases de complejidad que hay en el conjunto de datos.
+    \item \textbf{Modelo ajustado:} El modelo se somete a un proceso de ajuste fino, tras el que recibe el código y las instrucciones.
+\end{itemize}
+
+Para ello, se dividirá el conjunto de datos en dos conjuntos: \textit{train} (90\%) y \textit{test} (10\%). Para hacer esta división, se han considerado dichos porcentajes en cada una de las distintas complejidades del conjunto de datos, de manera que las clases queden equilibradas en ambos conjuntos. El conjunto \textit{train} lo usaremos para dar los ejemplos en \textit{few-shot} y para hacer ajuste fino, mientras que los códigos del conjunto test serán en los que evaluaremos el modelo en las tres fases.
+
+\subsection{Zero-shot}
+Se han probado distintos \textit{prompts} con el objetivo de estudiar cómo este afecta al rendimiento del modelo. Indicaremos por [CÓDIGO] el lugar donde se incluye el código a analizar por el modelo.
+
+\begin{tcolorbox}[
+  colback=gray!5,
+  colframe=black,
+  boxrule=0.5pt,
+  breakable,
+  title=Prompt 1 zero-shot,
+]
+Give the time complexity of the code:
+
+[CÓDIGO]
+\end{tcolorbox}
+
+\begin{tcolorbox}[
+  colback=gray!5,
+  colframe=black,
+  boxrule=0.5pt,
+  breakable,
+  title=Prompt 2 zero-shot,
+]
+Analyze the time complexity of the following code.
+
+Choose exactly one of the following options: O(1), O(logn), O(n), O(nlogn), O(n\textasciicircum2), O(n\textasciicircum3) or exponential (O(2\textasciicircum n), O(3\textasciicircum n), etc.).
+
+Give the time complexity of the code:
+
+[CÓDIGO]
+\end{tcolorbox}
+
+\begin{tcolorbox}[
+  colback=gray!5,
+  colframe=black,
+  boxrule=0.5pt,
+  breakable,
+  title=Prompt 3 zero-shot,
+]
+You are an expert in algorithm analysis and time complexity.
+
+Your task is to estimate the time complexity of the given code snippet enclosed by '///'.
+
+Analyze the time complexity of the following code.
+
+Choose exactly one of the following options: O(1), O(logn), O(n), O(nlogn), O(n\textasciicircum2), O(n\textasciicircum3) or exponential (O(2\textasciicircum n), O(3\textasciicircum n), etc.).
+
+Give the time complexity of the code:
+
+///
+
+[CÓDIGO]
+
+///
+\end{tcolorbox}
+
+\begin{table}[H]
+    \small
+    \centering
+    \begin{tabular}{c|c c c c c c c|c c}
+        Prompt & $\mathcal{O}(1)$ & $\mathcal{O}(\log n)$ & $\mathcal{O}(n)$ & $\mathcal{O}(n\log n)$ & $\mathcal{O}(n^2)$ & $\mathcal{O}(n^3)$ & exponencial & Accuracy & F1 \\ \hline
+        Prompt 1 & 0.419 & 0.250 & 0.650 & 0.480 & 0.587 & 0.241 & 0.128 & 0.418 & 0.407 \\
+        Prompt 2 & 0.546 & 0.318 & 0.750 & 0.494 & 0.290 & 0.364 & 0.200 & 0.450 & 0.468 \\
+        Prompt 3 & 0.546 & 0.415 & 0.750 & 0.468 & 0.238 & 0.259 & 0.167 & 0.436 & 0.445
+    \end{tabular}
+    \normalsize
+    \caption{Accuracy de la predicción de las clases de complejidad con zero-shot}
+    \label{tab:tab_zs}
+\end{table}
+
+\begin{figure}[H]
+  \centering
+    \includegraphics[width=0.4\textwidth]{CM_zeroshot_v1.png}
+    \includegraphics[width=0.4\textwidth]{CM_zeroshot_v2.png}
+    \includegraphics[width=0.4\textwidth]{CM_zeroshot_v3.png}
+  \caption{Matriz de confusión haciendo zero-shot con distintos prompts}
+  \label{fig:confmat_zs}
+\end{figure}
+
+\subsection{Few-shot}
+ Indicaremos por [CÓDIGO] el lugar donde se incluye el código a analizar por el modelo y por [EJEMPLO] el lugar donde se incluyen los distintos códigos de ejemplo.
+
+\begin{tcolorbox}[
+  colback=gray!5,
+  colframe=black,
+  boxrule=0.5pt,
+  breakable,
+  title=Prompt few-shot,
+]
+Analyze the time complexity of the following code.
+
+Choose exactly one of the following options: O(1), O(logn), O(n), O(nlogn), O(n\textasciicircum2), O(n\textasciicircum3) or exponential (O(2\textasciicircum n), O(3\textasciicircum n), etc.).
+
+Here are some examples:
+\\[\baselineskip]
+Example 1:
+
+Code:
+
+[EJEMPLO]
+
+Complexity: O(1)
+\\[\baselineskip]
+Example 2:
+
+Code:
+
+[EJEMPLO]
+
+Complexity: O(logn)
+\\[\baselineskip]
+Example 3:
+
+Code:
+
+[EJEMPLO]
+
+Complexity: O(n)
+\\[\baselineskip]
+Example 4:
+
+Code:
+
+[EJEMPLO]
+
+Complexity: O(nlogn)
+\\[\baselineskip]
+Example 5:
+
+Code:
+
+[EJEMPLO]
+
+Complexity: O(n\textasciicircum2)
+\\[\baselineskip]
+Example 6:
+
+Code:
+
+[EJEMPLO]
+
+Complexity: O(n\textasciicircum3)
+\\[\baselineskip]
+Example 7:
+
+Code:
+
+[EJEMPLO]
+
+Complexity: exponential
+\\[\baselineskip]
+Now analyze this code:
+
+Code:
+
+[CÓDIGO]
+
+Complexity:
+\end{tcolorbox}
+
+\begin{figure}[H]
+    \small
+    \begin{tabular}{c c c c c c c|c c}
+        $\mathcal{O}(1)$ & $\mathcal{O}(\log n)$ & $\mathcal{O}(n)$ & $\mathcal{O}(n\log n)$ & $\mathcal{O}(n^2)$ & $\mathcal{O}(n^3)$ & exponencial & Accuracy & F1 \\ \hline
+        0.553 & 0.500 & 0.714 & 0.628 & 0.277 & 0.333 & 0.306 & 0.497 & 0.518
+    \end{tabular}
+    \normalsize
+    \centering
+    \caption{Accuracy de la predicción de las clases de complejidad con few-shot}
+    \label{fig:tab_fs}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+    \includegraphics[width=0.5\textwidth]{CM_fewshot_v1.png}
+  \caption{Matriz de confusión haciendo few-shot}
+  \label{fig:confmat_fs}
+\end{figure}
+
+\subsection{Modelo ajustado}
+Para el modelo ajustado se ha escogido el \textit{prompt} 2 usado en \textit{zero-shot} pues presenta el mejor rendimiento y ya no son necesarios los ejemplos de \textit{few-shot}. El modelo ha sido ajustado tres veces con distintos números de pasos: 60 pasos, 1 época (537 pasos) y 2 épocas (1074 pasos).
+
+\begin{figure}[H]
+    \small
+    \begin{tabular}{c|c c c c c c c|c c}
+        Entrenamiento & $\mathcal{O}(1)$ & $\mathcal{O}(\log n)$ & $\mathcal{O}(n)$ & $\mathcal{O}(n\log n)$ & $\mathcal{O}(n^2)$ & $\mathcal{O}(n^3)$ & exponencial & Accuracy & F1 \\ \hline
+        60 pasos & 0.714 & 0.697 & 0.702 & 0.551 & 0.477 & 0.807 & 0.714 & 0.662 & 0.665 \\
+        1 época & 0.883 & 0.985 & 0.833 & 0.872 & 0.862 & 0.965 & 0.959 & 0.901 & 0.906 \\
+        2 épocas & 0.857 & 0.939 & 0.917 & 0.885 & 0.892 & 1.000 & 0.918 & 0.912 & 0.918 
+    \end{tabular}
+    \normalsize
+    \centering
+    \caption{Accuracy de la predicción de las clases de complejidad haciendo ajuste fino}
+    \label{fig:tab_QLoRA}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+    \includegraphics[width=0.4\textwidth]{CM_QLoRA_v1.png}
+    \includegraphics[width=0.4\textwidth]{CM_QLoRA_v2.png}
+    \includegraphics[width=0.4\textwidth]{CM_QLoRA_v3.png}
+  \caption{Matrices de confusión haciendo ajuste fino}
+  \label{fig:confmat_QLoRA}
+\end{figure}
+
+
+\section{Conclusiones}
+
+
+
+\addcontentsline{toc}{section}{Referencias}
+\begin{thebibliography}{100}
+
+
+
+
+\bibitem{antecedentes} Albert, J. V., Rabasa, F. J. F., \& Quetglás, G. M. (1998). \textit{Introducció a l’anàlisi i disseny d’algorismes}. Universitat de València.
+
+\bibitem{LayerNorm} Ba, J. L., Kiros, J. R., \& Hinton, G. E. (2016). \textit{Layer normalization}. arXiv. \url{https://arxiv.org/abs/1607.06450}
+
+\bibitem{in-context learning} Brown, T. B., Mann, B., Ryder, N., Subbiah, M., Kaplan, J., Dhariwal, P., \ldots\ \& Amodei, D. (2020). Language models are few-shot learners. \textit{Advances in Neural Information Processing Systems}, \textit{33}, 1877--1901. \url{https://arxiv.org/abs/2005.14165}
+
+
+\bibitem{LSTM} Hochreiter, S., \& Schmidhuber, J. (1997). Long short-term memory. \textit{Neural Computation}, \textit{9}(8), 1735--1780. \url{https://doi.org/10.1162/neco.1997.9.8.1735}
+
+\bibitem{fine-tuning} Howard, J., \& Ruder, S. (2018). Universal language model fine-tuning for text classification. In \textit{Proceedings of the 56th Annual Meeting of the Association for Computational Linguistics (ACL)} (pp. 328--339). \url{https://doi.org/10.18653/v1/P18-1031}
+
+\bibitem{Adam} Kingma, D. P., \& Ba, J. (2014). \textit{Adam: A method for stochastic optimization}. arXiv. \url{https://arxiv.org/abs/1412.6980}
+
+\bibitem{AdamW} Loshchilov, I., \& Hutter, F. (2019). \textit{Decoupled weight decay regularization}. arXiv. \url{https://arxiv.org/abs/1711.05101}
+
+\bibitem{libro} Jurafsky, D., \& Martin, J. H. (2025). \textit{Speech and language processing: An introduction to natural language processing, computational linguistics, and speech recognition with language models} (3rd ed.). Manuscript in preparation. \url{https://web.stanford.edu/~jurafsky/slp3}
+
+\bibitem{ROUGE} Lin, C.-Y. (2004). ROUGE: A package for automatic evaluation of summaries. In \textit{Proceedings of the Workshop on Text Summarization Branches Out (WAS 2004)} (pp. 74--81). \url{https://aclanthology.org/W04-1013/}
+
+\bibitem{BLEU} Papineni, K., Roukos, S., Ward, T., \& Zhu, W.-J. (2002). BLEU: A method for automatic evaluation of machine translation. In \textit{Proceedings of the 40th Annual Meeting of the Association for Computational Linguistics (ACL)} (pp. 311--318). \url{https://doi.org/10.3115/1073083.1073135}
+
+\bibitem{F1} Rajpurkar, P., Zhang, J., Lopyrev, K., \& Liang, P. (2016). SQuAD: 100,000+ questions for machine comprehension of text. In \textit{Proceedings of the 2016 Conference on Empirical Methods in Natural Language Processing (EMNLP)} (pp. 2383--2392). \url{https://aclanthology.org/D16-1264/}
+
+\bibitem{retropropagación} Rumelhart, D. E., Hinton, G. E., \& Williams, R. J. (1986). Learning representations by back-propagating errors. \textit{Nature}, \textit{323}(6088), 533--536. \url{https://doi.org/10.1038/323533a0}
+
+\bibitem{transformer} Vaswani, A., Shazeer, N., Parmar, N., Uszkoreit, J., Jones, L., Gomez, A. N., Kaiser, Ł., \& Polosukhin, I. (2017). Attention is all you need. In \textit{Advances in Neural Information Processing Systems} (Vol. 30). \url{https://papers.nips.cc/paper_files/paper/2017/file/3f5ee243547dee91fbd053c1c4a845aa-Paper.pdf}
+
+
+
+
+
+
+\end{thebibliography}
+
+
+%-------------------------------------------------------------------------------------------------------
+\newpage
+\appendix
+
+\section{Detalles del desarrollo del trabajo}
+
+\end{document}
