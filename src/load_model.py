@@ -1,5 +1,5 @@
 def load_model(
-    model_path: str,
+    model_path: str = "unsloth/Meta-Llama-3.1-8B-Instruct-bnb-4bit",
     max_seq_length: int = 2048
 ):
     """
