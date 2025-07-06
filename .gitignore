@@ -1,0 +1,49 @@
+# Bytecode
+__pycache__/
+*.py[cod]
+
+# Archivos de entorno
+.env
+*.env
+
+# Archivos del sistema operativo
+.DS_Store
+Thumbs.db
+
+# Archivos temporales de editores
+*.swp
+*.swo
+*.bak
+*.tmp
+.vscode/
+.idea/
+
+# Salida de entrenamiento
+outputs/
+checkpoints/
+*.ckpt
+*.pt
+*.safetensors
+
+# Datos
+data/
+*.jsonl
+*.csv
+
+# Logs y outputs
+*.log
+*.out
+
+# Notebooks temporales
+.ipynb_checkpoints/
+
+# Archivos grandes por error
+*.bin
+*.h5
+
+# Hugging Face cache
+~/.cache/huggingface/
+huggingface/
+
+# Archivos de ejecución
+test_results.jsonl
