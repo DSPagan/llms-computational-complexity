@@ -15,10 +15,8 @@ This research aims to support software developers in writing more efficient code
 ```bash
 .
 ├── src/                 # Source code for training and evaluation
-├── notebooks/           # Jupyter notebooks for exploration and visualization
 ├── data/                # Datasets used for fine-tuning or evaluation
-├── memoria/             # Thesis document (PDF or LaTeX files)
-├── figures/             # Diagrams, charts, and illustrative materials
+├── thesis/             # Thesis document (PDF and LaTeX files)
 └── README.md            # This file
 ```
 
