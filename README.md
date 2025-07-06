@@ -16,7 +16,7 @@ This research aims to support software developers in writing more efficient code
 .
 ├── src/                 # Source code for training and evaluation
 ├── data/                # Datasets used for fine-tuning or evaluation
-├── thesis/             # Thesis document (PDF and LaTeX files)
+├── thesis/              # Thesis document (PDF and LaTeX files)
 └── README.md            # This file
 ```
 
