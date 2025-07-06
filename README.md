@@ -20,13 +20,17 @@ This research aims to support software developers in writing more efficient code
 └── README.md            # This file
 ```
 
-## 🔧 Technologies Used
+### 🛠️ Installation
 
-- Python 3.x  
-- PyTorch and Hugging Face Transformers  
-- Unsloth and QLoRA for LLM fine-tuning  
-- Jupyter Notebooks  
-- LaTeX for the written report
+To run the fine-tuning and inference scripts, install the following dependencies:
+
+```bash
+pip install --no-deps bitsandbytes accelerate xformers==0.0.29.post3 peft trl triton cut_cross_entropy unsloth_zoo
+pip install sentencepiece protobuf "datasets>=3.4.1" huggingface_hub hf_transfer
+pip install --no-deps unsloth
+```
+
+Make sure you're using Python ≥3.10 and a GPU-enabled environment with CUDA support. These dependencies are optimized for 4-bit quantized models and efficient training with LoRA.
 
 ## 📊 Methodology
 
