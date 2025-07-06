@@ -14,10 +14,14 @@ This research aims to support software developers in writing more efficient code
 
 ```bash
 .
-├── src/                 # Source code for training and evaluation
-├── data/                # Datasets used for fine-tuning or evaluation
-├── thesis/              # Thesis document (PDF and LaTeX files)
-└── README.md            # This file
+├── data/                # Raw and processed datasets for training and evaluation
+├── figures/             # Figures used in the thesis
+├── notebooks/           # Jupyter notebooks for training and experimentation
+├── outputs/             # Output files such as fine-tuned models and inference results
+├── src/                 # Source code (Python scripts and utilities)
+├── thesis/              # LaTeX source and compiled PDF of the thesis
+├── .gitignore           # Git ignore rules for excluding unnecessary files from version control
+└── README.md            # Project overview and instructions
 ```
 
 ### 🛠️ Installation
