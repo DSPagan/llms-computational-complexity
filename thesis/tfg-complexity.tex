@@ -443,9 +443,41 @@ El \textbf{aprendizaje en contexto} \cite{in-context learning} es una capacidad 
 A diferencia del ajuste fino, donde se modifican explícitamente los pesos del modelo, en el aprendizaje en contexto la \"{}adaptación\"{} se realiza implícitamente a través del mecanismo de atención del \textit{Transformer}, utilizando los ejemplos previos en la entrada para ajustar su comportamiento temporalmente.
 
 \section{Experimentos}
-El objetivo de los experimentos es evaluar el rendimiento de los grandes modelos de lengua a la hora de clasificar la complejidad computacional de un algoritmo. Para ello, vamos a trabajar con el modelo open-source \texttt{Llama 3.1 8B Instruct} cuantizado a 4 bits, el cual cuenta con 8 mil millones de parámetros y está preentrenado para seguir instrucciones. La generación de texto será por medio de \textit{greedy decoding} para asegurar la reproducibilidad de los experimentos.
 
-Para evaluar el modelo usaremos el conjunto de datos de \texttt{CodeComplex}, formado por 4769 fragmentos de código de \texttt{Python}. Estos fragmentos de código tienen complejidades computacionales entre: constante, logarítmica, lineal, cuasi lineal, cuadrática, cúbica y exponencial. Las métricas de evaluación serán la accuracy y F1.
+El objetivo de los experimentos es evaluar el rendimiento de los grandes modelos de lengua a la hora de clasificar la complejidad computacional de un algoritmo. Para ello, vamos a trabajar con el modelo open-source \texttt{Llama 3.1 8B Instruct} \cite{Llama} cuantizado a 4 bits, el cual cuenta con 8 mil millones de parámetros y está preentrenado para seguir instrucciones. La generación de texto será por medio de \textit{greedy decoding} para asegurar la reproducibilidad de los experimentos.
+
+Para evaluar el modelo usaremos el conjunto de datos de \texttt{CodeComplex} \cite{CodeComplex}, formado por 4769 fragmentos de código de \texttt{Python}. Estos fragmentos de código tienen complejidades computacionales entre: constante (770), logarítmica (652), lineal (837), cuasi lineal (783), cuadrática (645), cúbica (579) y exponencial (503). Las métricas que utilizaremos para la evaluación son la exactitud (\textit{accuracy}) y la macro F1-score, que se calculan de la siguiente manera:
+
+\begin{equation}
+    \text{Accuracy}=\frac{\text{número de predicciones correctas}}{\text{número total de predicciones}}
+\end{equation}
+
+\begin{equation}
+    \text{Precision}=\frac{TP}{TP+FP}, \quad  \text{Recall}=\frac{TP}{TP+FN}
+    \label{eq:precision-recall}
+\end{equation}
+
+\begin{equation}
+    \text{F}_1 = 2\cdot\frac{\text{Precision}\cdot\text{Recall}}{\text{Precision}+\text{Recall}}
+    \label{eq:F1}
+\end{equation}
+
+\begin{equation}
+    \text{Macro F}_1=\frac{1}{n}\sum_{i=1}^{n}{\text{F}_{1}}_i
+\end{equation}
+
+donde:
+
+\begin{itemize}
+    \item $TP$: verdaderos positivos
+    \item $TN$: verdaderos negativos
+    \item $FP$: falsos positivos
+    \item $FN$: falsos negativos
+    \item ${\text{F}_{1}}_i$: F1-score de la clase $i$
+    \item $n$: número total de clases
+\end{itemize}
+
+A partir de las ecuaciones \eqref{eq:precision-recall} y \eqref{eq:F1} calculamos \textit{precision} (proporción de verdaderos positivos entre todas las predicciones que el modelo ha clasificado como positivas) y \textit{recall}  (proporción de verdaderos positivos entre todos los casos que realmente son positivos) de cada clase, para después calcular las respectivas F1-score (media armónica de \textit{precision} y \textit{recall}) de cada clase. Por último, una vez tenemos la F1-score de cada una de las clases, tomamos la media y obtenemos la macro F1-score.
 
 El código usado para llevar a cabo los experimentos se encuentra en el repositorio de \texttt{GitHub}: \url{https://github.com/DSPagan/llms-computational-complexity}
 
@@ -460,7 +492,8 @@ En estos experimentos estudiaremos cómo afecta el prompt a las predicciones del
 Para ello, se dividirá el conjunto de datos en dos conjuntos: \textit{train} (90\%) y \textit{test} (10\%). Para hacer esta división, se han considerado dichos porcentajes en cada una de las distintas complejidades del conjunto de datos, de manera que las clases queden equilibradas en ambos conjuntos. El conjunto \textit{train} lo usaremos para dar los ejemplos en \textit{few-shot} y para hacer ajuste fino, mientras que los códigos del conjunto test serán en los que evaluaremos el modelo en las tres fases.
 
 \subsection{Zero-shot}
-Se han probado distintos \textit{prompts} con el objetivo de estudiar cómo este afecta al rendimiento del modelo. Indicaremos por [CÓDIGO] el lugar donde se incluye el código a analizar por el modelo.
+
+Se han probado distintos \textit{prompts} con el objetivo de estudiar cómo este afecta al rendimiento del modelo. A continuación se muestran los tres \textit{prompts} explorados. Indicaremos por [CÓDIGO] el lugar donde se incluye el código a analizar por el modelo.
 
 \begin{tcolorbox}[
   colback=gray!5,
@@ -514,17 +547,19 @@ Give the time complexity of the code:
 ///
 \end{tcolorbox}
 
+La Tabla \ref{tab:tab_zs} muestra los resultados obtenidos en términos de exactitud y F1 y las Figuras \ref{fig:confmat_zs1}, \ref{fig:confmat_zs2} y \ref{fig:confmat_zs3} muestran las matrices de confusión para cada uno de los \textit{prompts}, respectivamente. Si el modelo no consigue catalogar un código en alguna de las complejidades que se contemplan en los experimentos, se tendrá en cuenta como un fallo para las métricas, pero no se representará en las matrices de confusión.
+
 \begin{table}[H]
-    \small
     \centering
+    \resizebox{\linewidth}{!}{
     \begin{tabular}{c|c c c c c c c|c c}
-        Prompt & $\mathcal{O}(1)$ & $\mathcal{O}(\log n)$ & $\mathcal{O}(n)$ & $\mathcal{O}(n\log n)$ & $\mathcal{O}(n^2)$ & $\mathcal{O}(n^3)$ & exponencial & Accuracy & F1 \\ \hline
-        Prompt 1 & 0.419 & 0.250 & 0.650 & 0.480 & 0.587 & 0.241 & 0.128 & 0.418 & 0.407 \\
-        Prompt 2 & 0.546 & 0.318 & 0.750 & 0.494 & 0.290 & 0.364 & 0.200 & 0.450 & 0.468 \\
-        Prompt 3 & 0.546 & 0.415 & 0.750 & 0.468 & 0.238 & 0.259 & 0.167 & 0.436 & 0.445
+        Prompt & $\mathcal{O}(1)$ & $\mathcal{O}(\log n)$ & $\mathcal{O}(n)$ & $\mathcal{O}(n\log n)$ & $\mathcal{O}(n^2)$ & $\mathcal{O}(n^3)$ & exponencial & Exactitud & Macro F1 \\ \hline
+        Prompt 1 & 41.9 & 25.0 & 65.0 & 48.0 & 58.7 & 24.1 & 12.8 & 41.8 & 40.7 \\
+        Prompt 2 & 54.6 & 31.8 & 75.0 & 49.4 & 29.0 & 36.4 & 20.0 & 45.0 & 46.8 \\
+        Prompt 3 & 54.6 & 41.5 & 75.0 & 46.8 & 23.8 & 25.9 & 16.7 & 43.6 & 44.5
     \end{tabular}
-    \normalsize
-    \caption{Accuracy de la predicción de las clases de complejidad con zero-shot}
+    }
+    \caption{Exactitud de la predicción de las clases de complejidad con zero-shot}
     \label{tab:tab_zs}
 \end{table}
 
@@ -549,8 +584,131 @@ Give the time complexity of the code:
   \label{fig:confmat_zs3}
 \end{figure}
 
+En la Tabla \ref{tab:tab_zs} podemos ver que la formulación del \textit{prompt} es un factor importante que repercute en los resultados del experimento, aunque en este caso las diferencias no son tan grandes. Con el \textit{prompt} 1 tenemos una exactitud de 41.8\%, pero al incluir las posibles clases de complejidad en el \textit{prompt} 2 conseguimos aumentarla hasta un 45\%. En el \textit{prompt} 3 se añaden aún más detalles, como especificar el rol del asistente como analista de complejidad computacional y delimitar el código con '///', pero esto solo acaba repercutiendo negativamente con una exactitud de 43.6\%. Así, el \textit{prompt} que mejores resultados ha obtenido es el \textit{prompt} 2.
+
+En los tres \textit{prompts} tenemos que la clase mejor predicha es $\mathcal{O}(n)$ con exactitudes de 65\%, 75\% y 75\% respectivamente, mientras que la peor predicha es la exponencial con exactitudes de 12.8\%, 20\% y  16.7\% respectivamente, lo que sugiere una clara descompensación al predecir las distintas clases de complejidad.
+
+En las Figuras \ref{fig:confmat_zs1}, \ref{fig:confmat_zs2} y \ref{fig:confmat_zs3} se aprecia que la clase predicha con mayor frecuencia es $\mathcal{O}(n)$, sin importar que haya sido correcta o no. Esto sugiere que el modelo tiene una mayor inclinación a asegurar que un código es de dicha clase de complejidad. Con el \textit{prompt} 2, el modelo suele confundir $\mathcal{O}(\log n)$ con $\mathcal{O}(1)$, exponencial con $\mathcal{O}(n\log n)$ y la mayoría de clases con $\mathcal{O}(n)$.
+
+A continuación se muestran algunos ejemplos de códigos catalogados con el \textit{prompt} 2:
+
+\begin{tcolorbox}[
+  colback=gray!5,
+  colframe=black,
+  boxrule=0.5pt,
+  breakable,
+  title=$\mathcal{O}(\log n)$ catalogado como $\mathcal{O}(1)$,
+]
+\begin{verbatim}
+# -*- coding: utf-8 -*-
+"""
+Created on Mon Sep  7 22:59:16 2020 
+
+@author: Dark Soul
+"""
+import math
+[l,r]=list(map(int,input().split()))l=l^r
+if l:
+    l=int(math.log(l,2))
+    l=(1<<(l+1))-1
+    print(l)
+else:
+    print(0)
+\end{verbatim}
+\end{tcolorbox}
+
+\begin{tcolorbox}[
+  colback=gray!5,
+  colframe=black,
+  boxrule=0.5pt,
+  breakable,
+  title=$\mathcal{O}(\log n)$ catalogado correctamente,
+]
+\begin{verbatim}
+n, s = list(map(int, input().split()))
+
+def sum_of_digits(n):
+        ans = 0
+        for c in str(n):
+                ans += int(c)
+        return ans
+
+while m - sum_of_digits(m) < s:
+        m += 10
+if m <= n:
+        print(n - m + 1)
+else:
+        print(0)
+\end{verbatim}
+\end{tcolorbox}
+
+\begin{tcolorbox}[
+  colback=gray!5,
+  colframe=black,
+  boxrule=0.5pt,
+  breakable,
+  title=Exponencial catalogado como $\mathcal{O}(n\log n)$,
+]
+\begin{verbatim}
+from collections import defaultdict
+from math import gcd
+from heapq import heappop, heappush
+n = int(input())
+A = list(map(int, input().split()))
+B = list(map(int, input().split()))
+hp = [(0, 0)]
+dis = {0: 0}
+seen = set()
+while hp:
+    _, x = heappop(hp)
+    if x == 1:
+        print(dis[x])
+        break
+    seen.add(x)
+    for a, b in zip(A, B):
+        y = gcd(x, a)
+        if y not in dis or dis[y] > dis[x] + b:
+            dis[y] = dis[x] + b
+            heappush(hp, (dis[y], y))
+else:
+    print(-1)
+\end{verbatim}
+\end{tcolorbox}
+
+\begin{tcolorbox}[
+  colback=gray!5,
+  colframe=black,
+  boxrule=0.5pt,
+  breakable,
+  title=Exponencial catalogado correctamente,
+]
+\begin{verbatim}
+n,l,r,x=map(int,input().split())
+import math
+z=list(map(int,input().split()))
+count=0
+for i in range(pow(2,len(z))):
+    mini=math.inf
+    maxa=0
+    j=i
+    inde=0
+    sume=0
+    while(j>0):
+        if(j&1):
+            sume+=z[inde]
+            maxa=max(maxa,z[inde])
+            mini=min(mini,z[inde])
+        j=j>>1
+        inde+=1
+    if(maxa-mini>=x and l<=sume<=r):
+        count+=1
+print(count)
+\end{verbatim}
+\end{tcolorbox}
+
 \subsection{Few-shot}
-Se tomará el \textit{prompt} 2 para incluir los ejemplos pues es el que mejores resultados ofrece según la Tabla \ref{tab:tab_zs}. Indicaremos por [CÓDIGO] el lugar donde se incluye el código a analizar por el modelo y por [EJEMPLO] el lugar donde se incluyen los distintos códigos de ejemplo.
+
+Se tomará el \textit{prompt} 2 para incluir los ejemplos, pues es el que mejores resultados ofrece según la Tabla \ref{tab:tab_zs}. Dichos ejemplos se tomarán aleatoriamente dentro del conjunto \textit{train}. Indicaremos por [CÓDIGO] el lugar donde se incluye el código a analizar por el modelo y por [EJEMPLO] el lugar donde se incluyen los distintos códigos de ejemplo.
 
 \begin{tcolorbox}[
   colback=gray!5,
@@ -630,15 +788,17 @@ Code:
 Complexity:
 \end{tcolorbox}
 
+La Tabla \ref{tab:tab_fs} muestra los resultados obtenidos en términos de exactitud y F1, y la Figura \ref{fig:confmat_fs} muestra la matriz de confusión obtenida con \textit{few-shot}.
+
 \begin{table}[H]
     \centering
     \small
     \begin{tabular}{c c c c c c c|c c}
-        $\mathcal{O}(1)$ & $\mathcal{O}(\log n)$ & $\mathcal{O}(n)$ & $\mathcal{O}(n\log n)$ & $\mathcal{O}(n^2)$ & $\mathcal{O}(n^3)$ & exponencial & Accuracy & F1 \\ \hline
-        0.553 & 0.500 & 0.714 & 0.628 & 0.277 & 0.333 & 0.306 & 0.497 & 0.518
+        $\mathcal{O}(1)$ & $\mathcal{O}(\log n)$ & $\mathcal{O}(n)$ & $\mathcal{O}(n\log n)$ & $\mathcal{O}(n^2)$ & $\mathcal{O}(n^3)$ & exponencial & Exactitud & Macro F1 \\ \hline
+        55.3 & 50.0 & 71.4 & 62.8 & 27.7 & 33.3 & 30.6 & 49.7 & 51.8
     \end{tabular}
     \normalsize
-    \caption{Accuracy de la predicción de las clases de complejidad con few-shot}
+    \caption{Exactitud de la predicción de las clases de complejidad con few-shot}
     \label{tab:tab_fs}
 \end{table}
 
@@ -649,20 +809,138 @@ Complexity:
   \label{fig:confmat_fs}
 \end{figure}
 
+Según la Tabla \ref{tab:tab_fs}, los resultados mejoran al incorporar ejemplos al \textit{prompt}, lo que refuerza la idea del aprendizaje en contexto. Se obtiene una exactitud de 49.7\%, en comparación con el máximo 45\% que se obtuvo con \textit{zero-shot}. Además, exponencial ya no es la clase peor clasificada, sino $\mathcal{O}(n^2)$, con un 27.7\%, mientras que $\mathcal{O}(n)$ sigue siendo la mejor clasificada con un 71.4\%. Si lo comparamos con la Tabla \ref{tab:tab_zs}, la predicción de algunas clases ha mejorado, mientras que la de otras ha empeorado ligeramente. El resultado son unas predicciones algo más equilibradas que con \textit{zero-shot}.
+
+Viendo la Figura \ref{fig:confmat_fs} podemos apreciar que sigue habiendo una predominancia por asignar la clase de complejidad $\mathcal{O}(n)$, pero ha mejorado ligeramente. Las confusiones más comunes en la matriz de confusión son: $\mathcal{O}(1)$ con $\mathcal{O}(\log n)$ y viceversa, $\mathcal{O}(\log n)$ con $\mathcal{O}(n\log n)$, $\mathcal{O}(n^2)$ con $\mathcal{O}(n\log n)$, $\mathcal{O}(n^3)$ con $\mathcal{O}(n^2)$ y todas las clases con $\mathcal{O}(n)$.
+
+A continuación se muestran algunos ejemplos de códigos catalogados con \textit{few-shot}:
+
+\begin{tcolorbox}[
+  colback=gray!5,
+  colframe=black,
+  boxrule=0.5pt,
+  breakable,
+  title=$\mathcal{O}(1)$ catalogado como $\mathcal{O}(\log n)$,
+]
+\begin{verbatim}
+def gcd(a,b):
+    if b==0:
+        return a
+    else:
+        return gcd(b,a%b)
+
+if __name__ == "__main__":
+    n = int(input())
+    ans = 0
+    if n==1:
+        ans = 1
+    elif n==2:
+        ans = 2
+    else:
+        if n%2!=0:
+            ans = n*(n-1)*(n-2)
+        else:
+            if gcd(n,(n-3)) ==1:
+                ans = n*(n-1)*(n-3)
+            else:
+                ans = (n-1)*(n-2)*(n-3)
+    print(ans)
+\end{verbatim}
+\end{tcolorbox}
+
+\begin{tcolorbox}[
+  colback=gray!5,
+  colframe=black,
+  boxrule=0.5pt,
+  breakable,
+  title=$\mathcal{O}(1)$ catalogado correctamente,
+]
+\begin{verbatim}
+n=int(input())
+if n==1 or n==2 :
+    print(n)
+elif n%2!=0 :
+    m=n*(n-1)*(n-2)
+    print(m)
+elif n%3!=0 :
+    m=n*(n-1)*(n-3)
+    print(m)
+else :
+    m=(n-1)*(n-2)*(n-3)
+    print(m)
+\end{verbatim}
+\end{tcolorbox}
+
+\begin{tcolorbox}[
+  colback=gray!5,
+  colframe=black,
+  boxrule=0.5pt,
+  breakable,
+  title=$\mathcal{O}(n^3)$ catalogado como $\mathcal{O}(n^2)$,
+]
+\begin{verbatim}
+from sys import stdin
+s=stdin.readline()
+for ln in range(len(s),0,-1):
+    for L in range(len(s)-ln+1):
+        if s[L:L+ln] in s[L+1:]:
+            print(ln)
+            exit()
+print(0)
+\end{verbatim}
+\end{tcolorbox}
+
+\begin{tcolorbox}[
+  colback=gray!5,
+  colframe=black,
+  boxrule=0.5pt,
+  breakable,
+  title=$\mathcal{O}(n^3)$ catalogado correctamente,
+]
+\begin{verbatim}
+import sys
+input = lambda: sys.stdin.readline().rstrip()
+
+N, M, K = map(int, input().split())
+if K % 2:
+    for _ in range(N):
+        print(*[-1] * M)
+    exit()
+A = [[int(a) for a in input().split()] for _ in range(N)]
+B = [[int(a) for a in input().split()] for _ in range(N-1)]
+X = [[0] * M for _ in range(N)]
+inf = 1 << 30
+for k in range(1, K // 2 + 1):
+    nX = [[inf] * M for _ in range(N)]
+    for i in range(N):
+        for j in range(M):
+            if i: nX[i][j] = min(nX[i][j], X[i-1][j] + B[i-1][j])
+            if i < N - 1: nX[i][j] = min(nX[i][j], X[i+1][j] + B[i][j])
+            if j: nX[i][j] = min(nX[i][j], X[i][j-1] + A[i][j-1])
+            if j < M - 1: nX[i][j] = min(nX[i][j], X[i][j+1] + A[i][j])
+    X = nX
+for x in X:
+    print(*[a * 2 for a in x])
+\end{verbatim}
+\end{tcolorbox}
+
 \subsection{Modelo ajustado}
+
 Para el modelo ajustado se ha escogido el \textit{prompt} 2 usado en \textit{zero-shot} pues presenta el mejor rendimiento según la Tabla \ref{tab:tab_zs} y ya no son necesarios los ejemplos de \textit{few-shot}. El modelo ha sido ajustado tres veces con distintos números de pasos: 60 pasos, 1 época (537 pasos) y 2 épocas (1074 pasos). Una época se corresponde con entrenar el modelo con el conjunto de entrenamiento completo; la cantidad de pasos depende del tamaño del conjunto de entrenamiento y de los parámetros escogidos al realizar el entrenamiento.
+
+La Tabla \ref{tab:tab_QLoRA} muestra los resultados obtenidos en términos de exactitud y F1 y las Figuras \ref{fig:confmat_QLoRA1}, \ref{fig:confmat_QLoRA2} y \ref{fig:confmat_QLoRA3} muestran las matrices de confusión para cada cantidad de pasos durante el ajuste fino, respectivamente.
 
 \begin{table}[H]
     \centering
-    \small
+    \resizebox{\linewidth}{!}{
     \begin{tabular}{c|c c c c c c c|c c}
-        Entrenamiento & $\mathcal{O}(1)$ & $\mathcal{O}(\log n)$ & $\mathcal{O}(n)$ & $\mathcal{O}(n\log n)$ & $\mathcal{O}(n^2)$ & $\mathcal{O}(n^3)$ & exponencial & Accuracy & F1 \\ \hline
-        60 pasos & 0.714 & 0.697 & 0.702 & 0.551 & 0.477 & 0.807 & 0.714 & 0.662 & 0.665 \\
-        1 época & 0.883 & 0.985 & 0.833 & 0.872 & 0.862 & 0.965 & 0.959 & 0.901 & 0.906 \\
-        2 épocas & 0.857 & 0.939 & 0.917 & 0.885 & 0.892 & 1.000 & 0.918 & 0.912 & 0.918 
+        Entrenamiento & $\mathcal{O}(1)$ & $\mathcal{O}(\log n)$ & $\mathcal{O}(n)$ & $\mathcal{O}(n\log n)$ & $\mathcal{O}(n^2)$ & $\mathcal{O}(n^3)$ & exponencial & Exactitud & Macro F1 \\ \hline
+        60 pasos & 71.4 & 69.7 & 70.2 & 55.1 & 47.7 & 80.7 & 71.4 & 66.2 & 66.5 \\
+        1 época & 88.3 & 98.5 & 83.3 & 87.2 & 86.2 & 96.5 & 95.9 & 90.1 & 90.6 \\
+        2 épocas & 85.7 & 93.9 & 91.7 & 88.5 & 89.2 & 100 & 91.8 & 91.2 & 91.8 
     \end{tabular}
-    \normalsize
-    \caption{Accuracy de la predicción de las clases de complejidad haciendo ajuste fino}
+    }
+    \caption{Exactitud de la predicción de las clases de complejidad haciendo ajuste fino}
     \label{tab:tab_QLoRA}
 \end{table}
 
@@ -687,8 +965,169 @@ Para el modelo ajustado se ha escogido el \textit{prompt} 2 usado en \textit{zer
   \label{fig:confmat_QLoRA3}
 \end{figure}
 
+Comparando la Tabla \ref{tab:tab_QLoRA} con las Tablas \ref{tab:tab_zs} y \ref{tab:tab_zs} se ve claramente que el ajuste fino ha mejorado notablemente los resultados del experimento. Así podemos comprobar que la incorporación de numerosos ejemplos de una tarea a los datos de entrenamiento permite que el modelo pueda especializarse en dicha tarea, en este caso, analizar la complejidad computacional de un algoritmo. Además, aumentar la cantidad de pasos (y, en consecuencia, de ejemplos) durante el ajuste fino favorece el aprendizaje del modelo, incluso iterando varias veces sobre el mismo conjunto de datos, como es el caso del ajuste con 2 épocas.
+
+En términos globales, el ajuste fino ha mejorado el modelo hasta alcanzar unas exactitudes de 66.2\%, 90.1\% y 91.2\%, habiendo sido entrenado con 60 pasos, 1 época y 2 épocas, respectivamente. Aunque es cierto que en términos globales el modelo ha mejorado su rendimiento con un mayor número de pasos, hay algunas clases que han empeorado sus predicciones de forma individual, pero esto se ve compensado con el resto de clases. La clase $\mathcal{O}(n^3)$ tiene una exactitud del 100\%, mientras que la clase peor predicha es $\mathcal{O}(1)$ con una exactitud de 85.7\%.
+
+En las Figuras \ref{fig:confmat_QLoRA1}, \ref{fig:confmat_QLoRA2} y \ref{fig:confmat_QLoRA3} se aprecia la disminución de errores en las predicciones. Tras el ajuste fino de 2 épocas, los errores más comunes son confundir: $\mathcal{O}(1)$ con $\mathcal{O}(\log n)$, $\mathcal{O}(n\log n)$ con $\mathcal{O}(n)$, $\mathcal{O}(n^2)$ con $\mathcal{O}(n)$ y exponencial con $\mathcal{O}(n\log n)$.
+
+A continuación se muestran algunos ejemplos de códigos catalogados con el ajuste fino de 2 épocas:
+
+\begin{tcolorbox}[
+  colback=gray!5,
+  colframe=black,
+  boxrule=0.5pt,
+  breakable,
+  title=$\mathcal{O}(n^2)$ catalogado como $\mathcal{O}(n)$,
+]
+\begin{verbatim}
+n=int(input())
+if n==1:
+    print(1)
+else:
+    p=list(map(int,input().split()))
+    children=[]
+    for i in range(n):
+        children.append([])
+    for i in range(n-1):
+        children[p[i]-1].append(i+1)
+    layers=[1]+[0]*(n-1)
+    layer=[0]
+    num=2
+    bylayer=[]
+    while len(layer)>0:
+        bylayer.append(layer)
+        newlayer=[]
+        for vert in layer:
+            for child in children[vert]:
+                layers[child]=num
+                newlayer.append(child)
+        layer=newlayer
+        num+=1
+    bylayer=bylayer[::-1]
+    count=[0]*n
+    for layer in bylayer:
+        for vert in layer:
+            if children[vert]==[]:
+                count[vert]=1
+            else:
+                count[vert]=sum(count[v] for v in children[vert])
+    count.sort()
+    out=""
+    for guy in count:
+        out+=str(guy)+" "
+    print(out)
+\end{verbatim}
+\end{tcolorbox}
+
+\begin{tcolorbox}[
+  colback=gray!5,
+  colframe=black,
+  boxrule=0.5pt,
+  breakable,
+  title=$\mathcal{O}(n^2)$ catalogado correctamente,
+]
+\begin{verbatim}
+import sys
+input=sys.stdin.buffer.readline
+n,m=map(int,input().split())
+for i in range(n//2+n%2):
+    x1=i+1
+    x2=n-i
+    if(x1==x2):
+        for j in range(m//2+m%2):
+            if(j+1==m-j):
+                sys.stdout.write((str(x1)+" "+str(j+1)+"\n"))
+            else:
+                sys.stdout.write((str(x1)+" "+str(j+1)+"\n"))
+                sys.stdout.write((str(x2)+" "+str(m-j)+"\n"))
+    else:
+        if(i%2==0):
+            for j in range(m):
+                sys.stdout.write((str(x1)+" "+str(j+1)+"\n"))
+                sys.stdout.write((str(x2)+" "+str(m-j)+"\n"))
+        else:
+            for j in range(m):
+                sys.stdout.write((str(x1)+" "+str(m-j)+"\n"))
+                sys.stdout.write((str(x2)+" "+str(j+1)+"\n"))
+\end{verbatim}
+\end{tcolorbox}
+
+\begin{tcolorbox}[
+  colback=gray!5,
+  colframe=black,
+  boxrule=0.5pt,
+  breakable,
+  title=$\mathcal{O}(n\log n)$ catalogado como $\mathcal{O}(n)$,
+]
+\begin{verbatim}
+n = int(input())
+p = list(map(int, input().split()))
+gr = [[] for i in range(n)]
+for i in range(n - 1):
+    gr[p[i] - 1].append(i + 1)
+
+q = [0]
+after = []
+i = 0
+s = [0 for i in range(n)]
+used = set()
+used.add(0)
+while q:
+    cur = q.pop()
+    after.append(cur)
+    for el in gr[cur]:
+        if el not in used:
+            used.add(el)
+            q.append(el)
+            i += 1
+
+q = after
+for j in range(i, -1, -1):
+    if len(gr[q[j]]) == 0:
+        s[q[j]] = 1
+    else:
+        ans = 0
+        for c in gr[q[j]]:
+            ans += s[c]
+        s[q[j]] = ans
+s.sort()
+print(' '.join(list(map(str, s))))
+\end{verbatim}
+\end{tcolorbox}
+
+\begin{tcolorbox}[
+  colback=gray!5,
+  colframe=black,
+  boxrule=0.5pt,
+  breakable,
+  title=$\mathcal{O}(n\log n)$ catalogado correctamente,
+]
+\begin{verbatim}
+import sys
+input_file = sys.stdin
+
+[n,m] = list(int(x) for x in input_file.readline().split())
+stacks = list(int(x) for x in input_file.readline().split())
+stacks.sort()
+
+ans = 0
+cur_stack = 0
+cur_h = 0
+
+while cur_stack < n:
+    ans += 1
+    if stacks[cur_stack] >= cur_h + 1:
+        cur_h += 1
+    cur_stack += 1
+ans += stacks[-1] - cur_h
+
+print(sum(stacks) - ans)
+\end{verbatim}
+\end{tcolorbox}
 
 \section{Conclusiones}
+
 El objetivo principal de este trabajo era investigar si los grandes modelos de lengua (LLMs) pueden ser útiles para estimar automáticamente la complejidad computacional de algoritmos, sin necesidad de ejecutarlos ni realizar análisis manual. A partir de los resultados obtenidos en los experimentos, se puede concluir que este objetivo se ha cumplido satisfactoriamente, aunque no sin matices.
 
 En primer lugar, se ha comprobado que los LLMs, incluso sin entrenamiento específico (\textit{zero-shot}), son capaces de realizar predicciones razonables sobre la complejidad de fragmentos de código, aunque su rendimiento es limitado. Este hecho evidencia que los LLMs han aprendido patrones generales sobre algoritmos y estructuras de control, pero no siempre son capaces de distinguir sutilezas entre clases de complejidad cercanas.
@@ -698,11 +1137,42 @@ La inclusión de ejemplos (\textit{few-shot}) mejora el rendimiento, lo que refu
 Desde un punto de vista crítico, este trabajo ha mostrado el potencial de los LLMs como herramientas de apoyo en la enseñanza, desarrollo y revisión de algoritmos, permitiendo obtener estimaciones rápidas de complejidad que pueden servir como punto de partida para un análisis más riguroso. No obstante, también se han identificado limitaciones importantes:
 
 \begin{itemize}
-    \item El modelo puede fallar cuando el código presenta ambigüedades, estructuras no convencionales o una lógica poco clara.
+    \item El modelo puede fallar cuando el código presenta ambigüedades, estructuras no convencionales o una lógica poco clara. Esto lo podemos ver en el siguiente ejemplo de código:
+
+    \begin{tcolorbox}[
+        colback=gray!5,
+        colframe=black,
+        boxrule=0.5pt,
+        breakable,
+        title=$\mathcal{O}(n)$ catalogado como $\mathcal{O}(n^2)$ con ajuste fino de 2 épocas,
+    ]
+    \begin{verbatim}
+# your code goes here
+import sys
+n=int(input())
+s=input()
+s+=s
+h=0
+for i in range(n):
+        if s[i]=='H':
+                h+=1
+ans=h
+for i in range(n):
+        c=0
+        for j in range(i,i+h):
+                if s[j]=='T':
+                        c+=1
+        ans=min(ans,c)
+print(ans)
+    \end{verbatim}
+    \end{tcolorbox}
+
+    donde la presencia de bucles anidados puede haber confundido al modelo.
+    
     \item El modelo ajustado ha sido entrenado sobre un único lenguaje (\texttt{Python}) y un conjunto limitado de fragmentos, por lo que no se puede garantizar su generalización a otros lenguajes o problemas más complejos.
 \end{itemize}
 
-Cabe señalar que el alcance del trabajo se ha visto limitado por los recursos computacionales disponibles y por la necesidad de trabajar con modelos accesibles y datasets ya existentes.
+Cabe señalar que el alcance del trabajo se ha visto limitado por los recursos computacionales disponibles y por la necesidad de trabajar con modelos accesibles y conjuntos de datos ya existentes. Además, el conjunto de datos usado contiene considerables ejemplos de códigos extremadamente parecidos, incluso ya habiendo sido eliminados del conjunto de datos los que fueran idénticos entre sí, por lo que la fiabilidad de dicho conjunto entra en duda.
 
 En resumen, este trabajo ha validado empíricamente la viabilidad de usar grandes modelos de lengua para estimar la complejidad computacional de algoritmos de forma automática. Aunque no se propone como sustituto del análisis formal, sí abre una vía prometedora para su automatización parcial, lo que podría tener implicaciones relevantes en el ámbito educativo y en herramientas de desarrollo asistido por inteligencia artificial. Futuros trabajos podrán ampliar esta línea de investigación, abordando nuevos lenguajes, tareas más complejas y mecanismos que aumenten la interpretabilidad de las decisiones del modelo.
 
@@ -715,6 +1185,8 @@ En resumen, este trabajo ha validado empíricamente la viabilidad de usar grande
 \bibitem{antecedentes} Albert, J. V., Rabasa, F. J. F., \& Quetglás, G. M. (1998). \textit{Introducció a l’anàlisi i disseny d’algorismes}. Universitat de València.
 
 \bibitem{LayerNorm} Ba, J. L., Kiros, J. R., \& Hinton, G. E. (2016). \textit{Layer normalization}. arXiv. \url{https://arxiv.org/abs/1607.06450}
+
+\bibitem{CodeComplex} Baik, S.-Y., Hahn, J., Kim, J., Jeon, M., Han, Y.-S., \& Ko, S.-K. (2024). CodeComplex: Dataset for worst‑case time complexity prediction. arXiv. \url{https://doi.org/10.48550/arXiv.2401.08719}
 
 \bibitem{in-context learning} Brown, T. B., Mann, B., Ryder, N., Subbiah, M., Kaplan, J., Dhariwal, P., \ldots\ \& Amodei, D. (2020). Language models are few-shot learners. \textit{Advances in Neural Information Processing Systems}, \textit{33}, 1877--1901. \url{https://arxiv.org/abs/2005.14165}
 
@@ -739,6 +1211,8 @@ En resumen, este trabajo ha validado empíricamente la viabilidad de usar grande
 \bibitem{F1} Rajpurkar, P., Zhang, J., Lopyrev, K., \& Liang, P. (2016). SQuAD: 100,000+ questions for machine comprehension of text. In \textit{Proceedings of the 2016 Conference on Empirical Methods in Natural Language Processing (EMNLP)} (pp. 2383--2392). \url{https://aclanthology.org/D16-1264/}
 
 \bibitem{retropropagación} Rumelhart, D. E., Hinton, G. E., \& Williams, R. J. (1986). Learning representations by back-propagating errors. \textit{Nature}, \textit{323}(6088), 533--536. \url{https://doi.org/10.1038/323533a0}
+
+\bibitem{Llama} Touvron, H., Nathan, L., Li, C., Raffel, C., Sanchez-Gonzalez, A., Chen, Y., \ldots\ \& LLaMA Team. (2024). The LLaMA 3 herd of models. arXiv. \url{https://arxiv.org/abs/2407.21783}
 
 \bibitem{transformer} Vaswani, A., Shazeer, N., Parmar, N., Uszkoreit, J., Jones, L., Gomez, A. N., Kaiser, Ł., \& Polosukhin, I. (2017). Attention is all you need. In \textit{Advances in Neural Information Processing Systems} (Vol. 30). \url{https://papers.nips.cc/paper_files/paper/2017/file/3f5ee243547dee91fbd053c1c4a845aa-Paper.pdf}
 
@@ -785,7 +1259,7 @@ En resumen, este trabajo ha validado empíricamente la viabilidad de usar grande
         Álgreba lineal I & 8-11, 14-15 & Conceptos básicos de álgebra lineal \\
         Probabilidad & 10-12, 14 & Se utilizan la renormalización y distribuciones de probabilidad \\
         Optimización II & 13 & Se usan métodos de optimización como descenso del gradiente \\ 
-        Análisis de datos II & 14, 15-24 & Se trabaja con métricas de rendimiento definidas en la asignatura \\
+        Análisis de datos II & 16-30 & Se trabaja con métricas de rendimiento definidas en la asignatura \\
         \hline
     \end{tabular}
     \caption{Asignaturas relacionadas con el trabajo}
