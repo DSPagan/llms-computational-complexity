@@ -1,5 +1,7 @@
 def train_model(
     train_data_path: str,
+    model,
+    tokenizer,
     output_dir: str = "outputs",
     num_epochs: int = 2,
     lora_r: int = 16,
@@ -20,7 +22,7 @@ def train_model(
     """
     
     from unsloth import FastLanguageModel, is_bfloat16_supported
-    from unsloth.chat_templates import get_chat_template, train_on_responses_only
+    from unsloth.chat_templates import train_on_responses_only
     from trl import SFTTrainer
     from transformers import TrainingArguments, DataCollatorForSeq2Seq
     from datasets import Dataset
@@ -29,20 +31,6 @@ def train_model(
     # Extract the data from the test_data file
     with open(train_data_path, 'r') as f:
         train_data = [json.loads(line.strip()) for line in f]
-
-    # Load the model and tokenizer
-    model, tokenizer = FastLanguageModel.from_pretrained(
-        model_name = "unsloth/Meta-Llama-3.1-8B-Instruct-bnb-4bit",
-        max_seq_length = max_seq_length, # maximum sequence length for the modelç
-        load_in_4bit = True, # use 4-bit quantization for memory efficiency
-        dtype = None,
-    )
-
-    # Apply the correct chat template
-    tokenizer = get_chat_template(
-        tokenizer,
-        chat_template = "llama-3.1",
-    )
 
     def formatting_prompts_func(examples):
         convos = examples["conversations"]
