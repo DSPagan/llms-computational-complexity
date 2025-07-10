@@ -1,8 +1,8 @@
 def run_inference(
-    test_data_path: str,
+    input_data: str,
     model,
     tokenizer,
-    save_path: str = "outputs/test_results.jsonl",
+    save_path: str = None,
     max_seq_length: int = 2048,
     max_new_tokens: int = 1024,
 ):   
@@ -10,10 +10,10 @@ def run_inference(
     Run inference on a list of code snippets to estimate their time complexity using a pretrained model.
 
     Args:
-        test_data_path (str): Path to the test .jsonl file.
+        input_data (str): Path to the input file in .txt or .py format, or code to analyze.
         model: The language model to use for inference.
         tokenizer: The tokenizer corresponding to the model.
-        save_path (str): File path where the model's predictions will be saved (JSONL format).
+        save_path (str): Path to save the results in .jsonl format, by default no file is saved.
         max_seq_length (int): Maximum length of the input tokens.
         max_new_tokens (int): Maximum number of tokens to generate for the output.
 
@@ -25,45 +25,88 @@ def run_inference(
     """
 
     import json
+    from pathlib import Path
+    
 
-    # Extract the data from the test_data file
-    with open(test_data_path, 'r') as f:
-        test_data = [json.loads(line.strip()) for line in f]
-
-    with open(save_path, 'w') as f:
-        for code in test_data:
-            # Change the prompt to match the training data format
-            prompt = f"""Analyze the time complexity of the following code.
+    def build_prompt(code):
+        return f"""Analyze the time complexity of the following code.
         Choose exactly one of the following options: O(1), O(logn), O(n), O(nlogn), O(n^2), O(n^3) or exponential (O(2^n), O(3^n), etc.).
         Give the time complexity of the code:
-        {code['src']}"""
-            messages = [
-                {"role": "user", "content": prompt}
-                ]
+        {code}"""
 
-            inputs = tokenizer.apply_chat_template(
-                messages,
-                tokenize=True,
-                add_generation_prompt=True,
-                return_tensors="pt",
-            ).to("cuda")
 
-            if len(inputs[0]) > max_seq_length:
-                continue
+    def gen_pred(prompt):
+        messages = [
+            {"role": "user", "content": prompt}
+            ]
 
-            tokens = model.generate(input_ids=inputs,
-                                    do_sample=False, # deterministic generation
-                                    max_new_tokens=max_new_tokens, # maximum number of tokens to generate
-                                    use_cache=True, # use cache for faster generation
-                                    no_repeat_ngram_size=4) # to avoid repetition
+        inputs = tokenizer.apply_chat_template(
+            messages,
+            tokenize=True,
+            add_generation_prompt=True,
+            return_tensors="pt",
+        ).to("cuda")
 
-            result = tokenizer.decode(tokens[0],skip_special_tokens=True)
-            idx = result.find("assistant")
-            result = result[idx + len("assistant"):].lstrip() # Filter the output to get the assistant's response
+        if len(inputs[0]) > max_seq_length:
+            return None
 
-            entry = {
-                "src": code['src'],
-                "complexity": code['complexity'],
-                "model": result,
-            }
-            f.write(json.dumps(entry) + '\n')
+        tokens = model.generate(input_ids=inputs,
+                                do_sample=False, # deterministic generation
+                                max_new_tokens=max_new_tokens, # maximum number of tokens to generate
+                                use_cache=True, # use cache for faster generation
+                                no_repeat_ngram_size=4) # to avoid repetition
+
+        result = tokenizer.decode(tokens[0],skip_special_tokens=True)
+        idx = result.find("assistant")
+        result = result[idx + len("assistant"):].lstrip() # Filter the output to get the assistant's response
+
+        return result
+        
+
+    if isinstance(input_data, str) and Path(input_data).suffix in [".py", ".txt"]:
+        results = []
+
+        with open(input_data, "r", encoding="utf-8") as f:
+            for i, line in enumerate(f):
+                code = line.strip()
+
+                # Change the prompt to match the training data format
+                prompt = build_prompt(code)
+
+                result = gen_pred(prompt)
+
+                if result is None:
+                    print(f"Skipping code snippet {i+1} due to length constraints.")
+                    continue
+
+                entry = {
+                    "src": code,
+                    "model": result,
+                }
+                
+                results.append(entry)
+
+        if save_path is not None:
+            with open(save_path, 'w') as out_file:
+                for entry in results:
+                    json.dump(entry, out_file)
+                    out_file.write('\n')
+
+        return results
+            
+
+    elif isinstance(input_data, str):
+        # If input_data is not a file, assume it's a code snippet
+        prompt = build_prompt(input_data.strip())
+
+        result = gen_pred(prompt)
+
+        if result is None:
+            print("The input code snippet is too long for the model to process.")
+            return None
+
+        return result
+    
+
+    else:
+        raise ValueError("Unsupported input type.")
