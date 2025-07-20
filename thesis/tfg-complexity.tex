@@ -397,20 +397,20 @@ Existen otros métodos de muestreo más sofisticados, orientados a tareas espec�
 El entrenamiento de los modelos LLM consiste en ajustar parámetros como las matrices de pesos que hemos estado definiendo anteriormente. Para esto necesitamos un corpus masivo de texto, que puede incluir libros, artículos, conversaciones en línea, páginas web, entre otros. Para hacerlo primero necesitamos una función de pérdida, vamos a usar la función de \textbf{pérdida de entropía cruzada} (\textit{cross-entropy loss}):
 
 \begin{equation}
-    L_{CE}=-\sum_{w\in V}\mathbf{y}_t[w]\log \hat{\mathbf{y}_t}[w]
+    L_{CE}=-\sum_{w\in V}\mathbf{y}_{t}[w]\log \hat{\mathbf{y}}_{t}}[w]
 \end{equation}
 
 donde $\mathbf{y}_t[w]$ representa un vector de ceros (con dimensión $\abs{V}$) exceptuando un $1$ en la posición de la siguiente palabra correcta, mientras que $\hat{\mathbf{y}}_t[w]$ representa el vector de probabilidades de ser la siguiente palabra para cada token del vocabulario $V$.
 De esta manera, se puede simplificar como
 
 \begin{equation}
-    L_{CE}(\hat{\mathbf{y}}_t,\mathbf{y}_t)=-\log\hat{\mathbf{y}}_t[w_{t+1}]
+    L_{CE}(\hat{\mathbf{y}}_{t},\mathbf{y}_{t})=-\log\hat{\mathbf{y}}_{t}[w_{t+1}]
 \end{equation}
 
 El objetivo es minimizar esta función de pérdida, por lo que usaremos el método del descenso del gradiente. El problema de esto es calcular el gradiente de la función de pérdida, pues al tener una estructura con tantas capas dificulta el cálculo del gradiente
 
 \begin{equation}
-    \frac{\partial L_{CE}(\hat{\mathbf{y}}_t,\mathbf{y}_t)}{\partial \theta}
+    \frac{\partial L_{CE}(\hat{\mathbf{y}}_{t},\mathbf{y}_{t})}{\partial \theta}
 \end{equation}
 
 en función de los parámetros $\theta$ del modelo. Para calcular el gradiente se usan técnicas de \textbf{retropropagación} \cite{retropropagación}, que mediante el uso de la regla de la cadena se propaga hasta el inicio del \textit{Transformer}. Otros algoritmos más eficientes que el descenso del gradiente para actualizar los parámetros de modelos basados en \textit{Transformers} son Adam \cite{Adam} y AdamW \cite{AdamW}. A este entrenamiento se le conoce como \textbf{aprendizaje autosupervisado} (\textit{self-supervised learning}, SSL).
