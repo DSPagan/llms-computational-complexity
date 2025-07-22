@@ -311,7 +311,7 @@ El cálculo de $\mathbf{A}$ consiste en una de las capas que forman el bloque \t
 \begin{align}
     \mu &= \frac{1}{d}\sum_{i=1}^d x_i \\
     \sigma &= \sqrt{\frac{1}{d}\sum_{i=1}^{d}(x_i-\mu)^{2}} \\
-    \hat{\mathbf{x}} &= \frac{x-\mu}{\sigma}
+    \hat{\mathbf{x}} &= \frac{\mathbf{x}-\mu}{\sigma}
 \end{align}
 
 de forma que se resta $\mu$ y se divide por $\sigma$ a cada componente del vector $\mathbf{x}$. Finalmente, en la implementación de la normalización por capas, se introducen dos parámetros aprendibles durante el entrenamiento, $\gamma$ y $\beta$, que representan los valores de escala y desplazamiento, respectivamente.
